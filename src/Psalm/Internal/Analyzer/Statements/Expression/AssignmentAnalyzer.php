@@ -69,6 +69,31 @@ class AssignmentAnalyzer
             $statements_analyzer
         );
 
+        $v = new class ($statements_analyzer, $context) extends \PhpParser\NodeVisitorAbstract implements \PhpParser\NodeVisitor {
+            private $statements_analyzer;
+            private $context;
+            public function __construct($statements_analyzer, $context)
+            {
+                $this->statements_analyzer = $statements_analyzer;
+                $this->context = $context;
+            }
+            public function enterNode(\PhpParser\Node $node)
+            {
+                //$context->vars_in_scope[$var_id] = $assign_value_type;
+                //var_dump($node);
+                //var_dump($this->statements_analyzer->getFQCLN());
+                if ($node instanceof PhpParser\Node\Expr) {
+                    $var_id = ExpressionIdentifier::getVarId($node, $this->statements_analyzer->getFQCLN(), $this->statements_analyzer);
+                    var_dump($this->context->vars_in_scope[$var_id]);
+                }
+            }
+        };
+        $t = new \PhpParser\NodeTraverser();
+        $t->addVisitor($v);
+        $t->traverse([$assign_value]);
+        //var_dump($assign_value);
+        //throw new \Exception('here');
+
         // gets a variable id that *may* contain array keys
         $array_var_id = ExpressionIdentifier::getArrayVarId(
             $assign_var,
